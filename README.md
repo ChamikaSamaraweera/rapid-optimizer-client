@@ -2,7 +2,7 @@
 
 <img src="https://rapidoptimizer.teaminfinity.lk/ro_1.png" alt="RapidOptimizer Dashboard" width="800"/>
 
-# RapidOptimizer
+# RapidOptimizer 
 
 **A complete Windows PC optimization suite built for gamers.**  
 Clean your system, boost performance, monitor hardware in real-time, and overlay live stats directly in-game — all from one dark, purpose-built tool.
