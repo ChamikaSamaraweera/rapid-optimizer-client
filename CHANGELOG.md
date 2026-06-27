@@ -5,6 +5,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.7] — 2026-06-27
+
+### Added
+
+- **App Sleep Mode** — new dedicated page to suspend/resume individual running processes
+  - Process list with name, PID, and current state (Running / Sleeping)
+  - Sleep/Wake individual apps via `NtSuspendProcess` / `NtResumeProcess` Win32 API calls
+  - Advanced Sleeper Mode toggle — automatically re-suspends apps that restart or spawn new instances
+  - Persistent state saved to `%AppData%\RapidOptimizer\sleeper.json`
+  - Background watcher goroutine polls every 3 seconds when Advanced Mode is active
+  - Safe by design — only the user can manually wake an app
+
+- **Windows Tweaks** — new section at the bottom of PC Optimize with 23 toggle switches across 4 categories
+  - **System Tweaks (🔧):** Optimize Performance, Optimize Network, Disable Error Reporting, Disable Compatibility Assistant, Disable Print Service, Disable Fax Service, Disable Sticky Keys, Disable SmartScreen
+  - **Privacy & Networking (🔒):** Disable Telemetry Tasks, Disable Media Player Sharing, Disable HomeGroup, Disable SMBv1, Disable SMBv2 (⚠️ orange warning)
+  - **Disk & Storage (💾):** Disable System Restore, Disable Superfetch, Disable Hibernation, Disable NTFS Last Access Timestamp, Disable Search Indexing
+  - **Application Tweaks (🖥️):** Disable Office / Firefox / Chrome / NVIDIA / Visual Studio telemetry
+  - Each tweak stores state in `localStorage` and calls Go backend via Wails bindings
+  - Toggle ON calls `ApplyTweak(tweakID)`, toggle OFF calls `RevertTweak(tweakID)`
+  - SMBv2 toggle rendered in orange (#f59e0b) with ⚠️ warning icon
+  - All commands execute hidden with no console window
+
+### Changed
+
+- PC Optimize page now includes Windows Tweaks section below existing System Tweaks
+- Navigation handler loads Windows Tweak states on page visit
+
+### Technical
+
+- New file: `tweaks.go` — contains `ApplyTweak` and `RevertTweak` methods on `App` struct
+- Uses `exec.Command` for PowerShell, `reg`, `sc`, `netsh`, `fsutil`, `powercfg` commands
+- All commands run with `HideWindow: true` and `CreationFlags: 0x08000000`
+- Wails bindings auto-generated for `ApplyTweak` and `RevertTweak`
+
 ## [1.1.6] — 2026-06-11
 
 ### Added
