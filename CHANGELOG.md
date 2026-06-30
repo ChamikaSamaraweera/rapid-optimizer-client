@@ -5,6 +5,91 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.8] — 2026-06-30
+
+### Added
+
+- **Hold-to-Confirm** — destructive buttons (cleaner page, reset network, uninstall app, delete startup) now require an ~800ms press-and-hold before executing
+  - Gold fill overlay (`rgba(255,209,102,0.25)`) grows left-to-right inside the button via `::before` pseudo-element
+  - Releasing early cancels and snaps the fill back to 0% in 150ms
+  - Capture-phase click interceptor blocks all quick clicks on `[data-hold-confirm]` buttons
+  - Supports mouse, touch, and keyboard (Enter/Space) events
+  - MutationObserver handles dynamically created buttons (uninstall, delete startup)
+  - Tooltip "Hold to confirm" added to all gated buttons
+
+- **Per-Feature License Gating** — license checks are now per-action instead of all-or-nothing
+  - `Clean()` is now completely free (no license required)
+  - `Optimize()` uses an `advancedTweakActions` map — only System Tweak actions (Xbox Game Bar, HAGS, Nagle, Priority Boost, Timer Resolution, SSD, Search Indexing, Superfetch) require a license
+  - Power plans, memory tools, and all network actions are now free
+  - PRO badges (`<span class="pro-badge">PRO</span>`) on locked System Tweak cards
+  - License gate no longer blocks startup — free users reach the dashboard immediately
+  - Reactive gate: when a locked action returns "🔒 ...", the license page appears automatically
+
+- **Sleeper Mode Redesign** — full UX/UI polish pass on the App Sleeper page
+  - Unified process list: single table showing all processes with Running/Sleeping status badges
+  - Checkbox column with Select All for multi-select bulk operations
+  - "Sleep Selected" button sleeps multiple apps sequentially
+  - Search box with clear (×) button and result count indicator ("12 of 34 processes")
+  - Shimmer loading skeleton instead of plain text
+  - Process rows show both `display_name` and `process_name` for better scannability
+  - Generic file icon placeholder per row
+  - Advanced Mode info tooltip explaining what it does
+  - Sleeping count KPI card is now the most visually prominent stat (double width, blue tint, larger font)
+
+### Changed
+
+- License gating refactored from blanket `requireLicense("PC Optimize")` to per-action `advancedTweakActions` map in `app.go`
+- `checkLicenseGate()` removed from auto-start init — free users no longer blocked on launch
+- `showBanner()` now detects "🔒" responses and reactively shows the license gate
+- `confirm()` dialogs removed from `uninstallApp()` and `deleteStartup()` — hold-to-confirm replaces them
+- Sleeper page markup completely rewritten: two separate tables merged into one unified list
+- `renderSleeperProcesses()` now merges running + sleeping processes into a single view
+- `renderSleeperSleeping()` removed (functionality merged into unified renderer)
+
+### Technical
+
+- New CSS: `.pro-badge`, `.sleeper-status-badge`, `.sleeper-row-sleeping`, sleeper checkbox styles
+- New JS: `escHtml()`, `clearSleeperSearch()`, `toggleSelectAllSleeper()`, `updateSleepSelectedBtn()`, `sleepSelectedApps()`
+- `advancedTweakActions` map in `app.go` defines exactly 17 locked action strings
+- MutationObserver in hold-to-confirm logic handles dynamically created buttons
+- All existing function signatures preserved (`loadSleeperState`, `filterSleeperProcesses`, etc.)
+
+---
+
+## [1.1.7] — 2026-06-27
+
+### Added
+
+- **App Sleep Mode** — new dedicated page to suspend/resume individual running processes
+  - Process list with name, PID, and current state (Running / Sleeping)
+  - Sleep/Wake individual apps via `NtSuspendProcess` / `NtResumeProcess` Win32 API calls
+  - Advanced Sleeper Mode toggle — automatically re-suspends apps that restart or spawn new instances
+  - Persistent state saved to `%AppData%\RapidOptimizer\sleeper.json`
+  - Background watcher goroutine polls every 3 seconds when Advanced Mode is active
+  - Safe by design — only the user can manually wake an app
+
+- **Windows Tweaks** — new section at the bottom of PC Optimize with 23 toggle switches across 4 categories
+  - **System Tweaks (🔧):** Optimize Performance, Optimize Network, Disable Error Reporting, Disable Compatibility Assistant, Disable Print Service, Disable Fax Service, Disable Sticky Keys, Disable SmartScreen
+  - **Privacy & Networking (🔒):** Disable Telemetry Tasks, Disable Media Player Sharing, Disable HomeGroup, Disable SMBv1, Disable SMBv2 (⚠️ orange warning)
+  - **Disk & Storage (💾):** Disable System Restore, Disable Superfetch, Disable Hibernation, Disable NTFS Last Access Timestamp, Disable Search Indexing
+  - **Application Tweaks (🖥️):** Disable Office / Firefox / Chrome / NVIDIA / Visual Studio telemetry
+  - Each tweak stores state in `localStorage` and calls Go backend via Wails bindings
+  - Toggle ON calls `ApplyTweak(tweakID)`, toggle OFF calls `RevertTweak(tweakID)`
+  - SMBv2 toggle rendered in orange (#f59e0b) with ⚠️ warning icon
+  - All commands execute hidden with no console window
+
+### Changed
+
+- PC Optimize page now includes Windows Tweaks section below existing System Tweaks
+- Navigation handler loads Windows Tweak states on page visit
+
+### Technical
+
+- New file: `tweaks.go` — contains `ApplyTweak` and `RevertTweak` methods on `App` struct
+- Uses `exec.Command` for PowerShell, `reg`, `sc`, `netsh`, `fsutil`, `powercfg` commands
+- All commands run with `HideWindow: true` and `CreationFlags: 0x08000000`
+- Wails bindings auto-generated for `ApplyTweak` and `RevertTweak`
+
 ## [1.1.6] — 2026-06-11
 
 ### Added
