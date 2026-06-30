@@ -5,6 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+<<<<<<< HEAD
 ## [1.1.8] — 2026-06-30
 
 ### Added
@@ -56,6 +57,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+=======
+>>>>>>> e0385f0967acfc1a8184b5369b9beddcd09c1e1d
 ## [1.1.7] — 2026-06-27
 
 ### Added
